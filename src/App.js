@@ -2,31 +2,29 @@ import "./App.css";
 import NewSearchForm from "./components/NewSearchForm";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import LocationList from "./components/LocationList";
 
 function App() {
-  const [locationList, setLocationObject] = useState(
-    // {}
-    {
-      location: "Seattle",
-      cityLatitude: "",
-      cityLongitude: "",
-    }
-  );
-  // console.log("this is location object:", locationList);
+  const [locationList, setLocationList] = useState([
+    { location: "Seattle", latitude: "", longitude: "" },
+  ]);
   const URL = "https://us1.locationiq.com/v1/search.php";
   const LOCATIONIQ_KEY = "";
 
-  const searchCityCallback = (newCity) => {
+  const searchCity = (newCity) => {
     // console.log("this is new city:", newCity);
-
-    // const newLocationList = [...locationList];
-    const newLocationList = {
-      location: newCity.location,
-      cityLatitude: " ",
-      cityLongitude: " ",
+    const newLocationList = [...locationList];
+    // console.log("this is list after serach function called:", newLocationList);
+    // console.log(
+    const newLocation = {
+      location: newCity,
+      latitude: "",
+      longitude: "",
     };
-
-    setLocationObject(newLocationList);
+    newLocationList.unshift(newLocation);
+    setLocationList(newLocationList);
+    // console.log(newLocationList);
+    // console.log("this is list after set function:", locationList);
   };
 
   useEffect(() => {
@@ -36,7 +34,7 @@ function App() {
       .get(URL, {
         params: {
           key: LOCATIONIQ_KEY,
-          q: locationList.location,
+          q: locationList[0].location,
           format: "json",
         },
       })
@@ -44,33 +42,37 @@ function App() {
         // console.log(result);
         const lat = result.data[0].lat;
         const long = result.data[0].lon;
-        const locationAPIRescopy = () => {
-          return {
-            location: locationList.location,
-            cityLatitude: lat,
-            cityLongitude: long,
+        const locationAPIRescopy = [];
+        for (const locationObejct of locationList) {
+          const newLocationObject = {
+            ...locationObejct,
+            latitude: lat,
+            longitude: long,
           };
-        };
+          locationAPIRescopy.push(newLocationObject);
+        }
 
-        setLocationObject(locationAPIRescopy);
+        setLocationList(locationAPIRescopy);
       })
 
       .catch((err) => {
         console.log(err);
       });
-  }, [locationList.location]);
+  }, [locationList[0].location]);
 
   return (
     <div className="App">
       <header className="App-header"></header>
       <h1>Get Latitude and Longitude</h1>
       <main>
-        <NewSearchForm searchCityCallback={searchCityCallback}></NewSearchForm>
-        <h2>Results for: {locationList.location} </h2>
+        <NewSearchForm searchCityCallback={searchCity}></NewSearchForm>
+        <h2>Results for: {locationList[0].location} </h2>
         <ul>
-          <li>Latitude: {locationList.cityLatitude} </li>
-          <li>Longitude: {locationList.cityLongitude} </li>
+          <li>Latitude: {locationList[0].latitude} </li>
+          <li>Longitude: {locationList[0].longitude} </li>
         </ul>
+        <h1>Search History</h1>
+        <LocationList locationList={locationList}></LocationList>
       </main>
     </div>
   );

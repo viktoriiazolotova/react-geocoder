@@ -15,9 +15,7 @@ const NewSearchForm = ({ searchCityCallback }) => {
   const onFormSubmit = (event) => {
     event.preventDefault();
 
-    searchCityCallback({
-      location: formCity,
-    });
+    searchCityCallback(formCity);
 
     setFormCity(" ");
   };
